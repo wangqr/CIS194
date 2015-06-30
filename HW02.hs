@@ -27,7 +27,7 @@ colors = [Red, Green, Blue, Yellow, Orange, Purple]
 -- Get the number of exact matches between the actual code and the guess
 exactMatches :: Code -> Code -> Int
 exactMatches (x:xs) (y:ys)
-  | x == y    = 1 + (exactMatches xs ys)
+  | x == y    = 1 + exactMatches xs ys
   | otherwise = exactMatches xs ys
 exactMatches _ _ = 0
 
@@ -64,7 +64,7 @@ filterCodes = filter . isConsistent
 
 allCodes :: Int -> [Code]
 allCodes n
-  | n == 0    = []
+  | n <= 0    = []
   | n == 1    = map (:[]) colors
   | otherwise = concatMap (\x -> map (:x) colors) (allCodes $ n-1)
 
@@ -73,30 +73,37 @@ allCodes n
 solve :: Code -> [Move]
 solve x = solveInCodeList x head (allCodes $ length x)
 
+-- Get solution from the given list, using a given method to generate the next
+-- guess
 solveInCodeList :: Code -> ([Code] -> Code) -> [Code] -> [Move]
 solveInCodeList _ _ [] = []
-solveInCodeList x gg y@(_:_) = t : solveInCodeList x gg (filterCodes t $ filter (g/=) y)
+solveInCodeList x gen_next_guess code_list =
+  t : solveInCodeList x gen_next_guess (
+    filterCodes t $ filter (next_guess/=) code_list
+  )
   where
-    g = gg y
-    t = getMove x g
+    next_guess = gen_next_guess code_list
+    t = getMove x next_guess
 
 -- Bonus ----------------------------------------------
 
 fiveGuess :: Code -> [Move]
 fiveGuess x = solveInCodeList x getNextGuess (allCodes $ length x)
 
+-- the optimal way to choose next guess, code_list is not empty
 getNextGuess :: [Code] -> Code
-getNextGuess allc
-  | allc == allCodes 2 = [Red, Green]
-  | allc == allCodes 3 = [Red, Green, Blue]
-  | allc == allCodes 4 = [Red, Red, Green, Green] -- speed-up tricks
+getNextGuess code_list
+  | code_list == []         = []
+  | code_list == allCodes 2 = [Red, Green]
+  | code_list == allCodes 3 = [Red, Green, Blue]
+  | code_list == allCodes 4 = [Red, Red, Green, Green] -- speed-up tricks
   | otherwise =
   minimumBy (
     compare `on` (
-	  \c -> maximum $ concatMap (
-	    \x -> map (
-		  \y -> length(filterCodes (Move c x y) allc)
-		) [0..(length c - x)]
-      ) [0..(length c)]
-	)
-  ) allc
+      \code -> maximum $ concatMap (
+        \x -> map (
+          \y -> length(filterCodes (Move code x y) code_list)
+        ) [0..(length code - x)]
+      ) [0..(length code)]
+    )
+  ) code_list

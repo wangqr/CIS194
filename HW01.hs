@@ -39,7 +39,7 @@ sumDigits = sum . map (sum . toRevDigits)
 
 -- Validate a credit card number using the above functions.
 luhn :: Integer -> Bool
-luhn = (== 0) . (`mod` 10) . sumDigits . doubleEveryOther . toRevDigits
+luhn = (0==) . (`mod` 10) . sumDigits . doubleEveryOther . toRevDigits
 
 -- Exercise 6 -----------------------------------------
 
@@ -48,17 +48,25 @@ type Peg = String
 type Move = (Peg, Peg)
 
 hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
-hanoi 0 _ _ _ = []
-hanoi n a b c = (hanoi (n-1) a c b) ++ ((a,b):(hanoi (n-1) c b a))
+hanoi n a b c
+  | n <= 0    = []
+  | otherwise = (hanoi (n-1) a c b) ++ ((a,b):(hanoi (n-1) c b a))
 
 -- Exercise 7 -----------------------------------------
 
-hanoiWithFourPegs :: Integer -> Peg -> Peg -> Peg -> Peg -> [Move]
-hanoiWithFourPegsL :: Integer -> Integer
+hanoiFourPegs :: Integer -> Peg -> Peg -> Peg -> Peg -> [Move]
+hanoiFourPegs n a b c d
+  | n < 3     = hanoi n a b c
+  | otherwise = (
+      \k -> (hanoiFourPegs (n - k) a c b d) ++ (hanoi k a b d)
+        ++ (hanoiFourPegs (n - k) c b a d)
+    ) $ minimumBy (
+      compare `on` (\k -> (2 * hanoiFourPegsL (n - k)) + (2 ^ k) -1)
+    ) [2..n]
 
-hanoiWithFourPegs 0 _ _ _ _ = []
-hanoiWithFourPegs n a b c d = (\k -> (hanoiWithFourPegs (n-k) a c b d) ++ (hanoi k a b d) ++ (hanoiWithFourPegs (n-k) c b a d)) $ (minimumBy (compare `on` (\k -> (2 * (hanoiWithFourPegsL (n-k))) + ((2 ^ k) -1)))) [1..n]
-
-hanoiWithFourPegsL 0 = 0
-hanoiWithFourPegsL n = minimum $ (map (\k -> (2 * (hanoiWithFourPegsL (n-k))) + ((2 ^ k) -1))) [1..n]
-
+-- hanoiFourPegsL n = length $ hanoiFourPegs n "" "" "" ""
+hanoiFourPegsL :: Integer -> Integer
+hanoiFourPegsL n
+  | n < 3     = (2 ^ n) - 1
+  | otherwise = minimum $
+    map (\k -> (2 * hanoiFourPegsL (n-k)) + (2 ^ k) - 1) [2..n]

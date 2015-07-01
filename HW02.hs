@@ -26,10 +26,7 @@ colors = [Red, Green, Blue, Yellow, Orange, Purple]
 
 -- Get the number of exact matches between the actual code and the guess
 exactMatches :: Code -> Code -> Int
-exactMatches (x:xs) (y:ys)
-  | x == y    = 1 + exactMatches xs ys
-  | otherwise = exactMatches xs ys
-exactMatches _ _ = 0
+exactMatches c = sum . zipWith (\a b -> if a==b then 1 else 0) c
 
 -- Exercise 2 -----------------------------------------
 
@@ -39,10 +36,7 @@ countColors y = map (\x -> length $ filter (x==) y) colors
 
 -- Count number of matches between the actual code and the guess
 matches :: Code -> Code -> Int
-matches x y = addMin (countColors x) (countColors y)
-  where
-    addMin (ix:xs) (iy:ys) = (minimum [ix, iy]) + (addMin xs ys)
-    addMin _ _             = 0
+matches c = sum . (zipWith min `on` countColors) c
 
 -- Exercise 3 -----------------------------------------
 
@@ -79,11 +73,11 @@ solveInCodeList :: Code -> ([Code] -> Code) -> [Code] -> [Move]
 solveInCodeList _ _ [] = []
 solveInCodeList x gen_next_guess code_list =
   t : solveInCodeList x gen_next_guess (
-    filterCodes t $ filter (next_guess/=) code_list
+    filterCodes t $ filter (next_guess /=) code_list
   )
   where
     next_guess = gen_next_guess code_list
-    t = getMove x next_guess
+    t          = getMove x next_guess
 
 -- Bonus ----------------------------------------------
 

@@ -8,11 +8,11 @@ import Data.List
 
 -- Get the last digit from a number
 lastDigit :: Integer -> Integer
-lastDigit = (`mod` 10)
+lastDigit = (`quot` 10)
 
 -- Drop the last digit from a number
 dropLastDigit :: Integer -> Integer
-dropLastDigit = (`div` 10)
+dropLastDigit = (`rem` 10)
 
 -- Exercise 2 -----------------------------------------
 
@@ -39,7 +39,7 @@ sumDigits = sum . map (sum . toRevDigits)
 
 -- Validate a credit card number using the above functions.
 luhn :: Integer -> Bool
-luhn = (0==) . (`mod` 10) . sumDigits . doubleEveryOther . toRevDigits
+luhn = (0==) . (`rem` 10) . sumDigits . doubleEveryOther . toRevDigits
 
 -- Exercise 6 -----------------------------------------
 

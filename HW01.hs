@@ -8,11 +8,11 @@ import Data.List
 
 -- Get the last digit from a number
 lastDigit :: Integer -> Integer
-lastDigit = (`quot` 10)
+lastDigit = (`rem` 10)
 
 -- Drop the last digit from a number
 dropLastDigit :: Integer -> Integer
-dropLastDigit = (`rem` 10)
+dropLastDigit = (`quot` 10)
 
 -- Exercise 2 -----------------------------------------
 
@@ -25,8 +25,7 @@ toRevDigits x
 
 -- Double every second number in a list starting on the left.
 doubleEveryOther :: [Integer] -> [Integer]
-doubleEveryOther (x:y:xs) = x:(2*y):(doubleEveryOther xs)
-doubleEveryOther xs       = xs
+doubleEveryOther = zipWith (*) $ cycle [1, 2]
 
 -- Exercise 4 -----------------------------------------
 
